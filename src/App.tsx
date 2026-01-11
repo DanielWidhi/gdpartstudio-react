@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 // Public Pages
 import Home from "./pages/public/Home";
@@ -28,9 +28,19 @@ const ScrollToTop = () => {
   return null;
 };
 
+const isAuthenticated = () => !!localStorage.getItem("isAdmin");
+
+const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+};
+
 const App: React.FC = () => {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <ScrollToTop />
       <Routes>
         {/* Public Routes */}
@@ -43,7 +53,7 @@ const App: React.FC = () => {
         <Route path="/login" element={<Login />} />
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={<RequireAuth children={<AdminLayout />} />}>
           <Route index element={<AdminPortfolioList />} />
           <Route path="portfolio" element={<AdminPortfolioList />} />
           <Route path="portfolio/create" element={<AdminCreatePost />} />
@@ -55,7 +65,7 @@ const App: React.FC = () => {
           <Route path="services/edit/:id" element={<AdminEditService />} />
         </Route>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 };
 
